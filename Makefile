@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -c 
+CFLAGS = -c -std=c++0x
 
 WFLAGS = -Wall 
 
