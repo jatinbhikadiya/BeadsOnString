@@ -22,9 +22,12 @@ void node::print_node_info() {
 
 double node::time_to_impact(node* o) {
 	//std::cout<<"\ncalculation of  time to impact \n";
-	//std::cout<<"Position of 0: "<<this->position<<"\t position of 1: "<< o->get_position()<<std::endl;
-	double distance = abs(this->position - o->get_position())
+	std::cout<<"Position of 0: "<<this->position<<"\t position of 1: "<< o->get_position()<<std::endl;
+	std::cout<<"Radius of 0: "<<this->radius<<"\t position of 1: "<< o->get_radius()<<std::endl;
+
+	double distance = o->get_position()-this->position
 			- (this->radius + o->get_radius());
+	std::cout<<"distance"<<distance;
 	double total_velocity = this->velocity + o->get_velocity();
 	return distance / total_velocity;
 
