@@ -23,7 +23,7 @@ public:
 	node();
 	node(int i,double p,double d,double r,double v):node_id(i),position(p),direction(d),
 			radius(r),velocity(v){};
-	void add_left_node(node* l){left_node =l;};
+	void add_left_node(node* l){left_node=l;};
 	void add_right_node(node* r){right_node=r;};
 	node* get_left_node(){return left_node;}
 	node* get_right_node(){return right_node;}
