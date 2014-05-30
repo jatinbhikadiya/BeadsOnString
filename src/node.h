@@ -27,11 +27,15 @@ public:
 	void add_right_node(node* r){right_node=r;};
 	node* get_left_node(){return left_node;}
 	node* get_right_node(){return right_node;}
-	void change_right_is_paired(bool value);
 
+	double time_to_impact(node*);
+	void update_position_at_t(double time);
+	void change_direction();
 	int get_node_id(){return node_id;}
 	int get_direction(){return direction;}
-
+	double get_radius(){return radius;}
+	double get_velocity(){return velocity;}
+	double get_position(){return position;}
 
 	void print_node_info();
 	virtual ~node();

@@ -19,10 +19,34 @@ void node:: print_node_info(){
 	std::cout<<"\tvelocity:"<<direction;
 
 }
-void node:: change_right_is_paired(bool value)
+
+double node:: time_to_impact(node* o)
 {
-	right_node->is_paired=value;
+	std::cout<<"\ncalculation of  time to impact \n";
+	std::cout<<"Position of 0: "<<this->position<<"\t position of 1: "<< o->get_position()<<std::endl;
+	double distance = abs(this->position - o->get_position()) - (this->radius+o->get_radius());
+	double total_velocity = this->velocity+o->get_velocity();
+	return distance/total_velocity;
+
 }
+
+void node::	update_position_at_t(double time){
+	position = position + velocity*direction*time;
+}
+
+void node::change_direction(){
+	if(velocity!=0)
+	{
+	if(direction==1)
+	{
+		direction=-1;
+	}
+	else{
+		direction=1;
+	}
+	}
+}
+
 node::~node() {
 	// TODO Auto-generated destructor stub
 }
