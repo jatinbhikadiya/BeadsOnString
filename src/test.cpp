@@ -1,13 +1,13 @@
 //============================================================================
 // Name        : test.cpp
-// Author      : 
-// Version     :
-// Copyright   : Your copyright notice
-// Description : Hello World in C++, Ansi-style
+// Author      : Jatin Bhikadiya
+// Version     : 1.0
+// Description : Beads on string for the VideoIQ interview
 //============================================================================
 
 #include <iostream>
 #include <stdlib.h>
+#include <utility>
 #include<cmath>
 #include "node.h"
 
@@ -33,11 +33,11 @@ void init_positions(std::vector<int>&positions, std::vector<int>&velocities,
 	}
 	std::sort(positions.begin(), positions.end());
 	for (auto p : positions) {
-		std::cout << p << "\n";
+		std::cout << p << "\t";
 	}
 	std::cout << "velocities\n";
 	for (auto v : velocities) {
-		std::cout << v << "\n";
+		std::cout << v << "\t";
 	}
 }
 
@@ -48,13 +48,13 @@ void init_nodes(std::vector<node> &all_nodes, std::vector<int>&positions,
 	for (int i = 0; i < N; i++) {
 		node temp(all_nodes.size(),positions.at(i), velocities.at(i), 1, r);
 		all_nodes.push_back(temp);
-		all_nodes.at(i + 1).add_left_node(all_nodes.at(i));
-		all_nodes.at(i).add_right_node(all_nodes.at(i + 1));
+		all_nodes.at(i + 1).add_left_node(&all_nodes.at(i));
+		all_nodes.at(i).add_right_node(&all_nodes.at(i + 1));
 	}
 	node right_surface(all_nodes.size(),100, -1, 1, r);
 	all_nodes.push_back(right_surface);
-	all_nodes.at(N).add_right_node(all_nodes.at(N + 1));
-	all_nodes.at(N + 1).add_left_node(all_nodes.at(N));
+	all_nodes.at(N).add_right_node(&all_nodes.at(N + 1));
+	all_nodes.at(N + 1).add_left_node(&all_nodes.at(N));
 
 }
 
@@ -78,9 +78,63 @@ void print_nodes(std::vector<node> &all_nodes)
 	}
 }
 
+
+/*To find the position at time T
+ * First, node pairs are found in which two nodes
+ * are going to collide in some time t. Amongst these
+ * pairs, the pair with minimum collision time is found and
+ * the state of the system is changes at that minimum time.
+ * So adding all these minimum time until the system reaches
+ * to total time T will give the position of all the beads after
+ * time T
+ */
 void find_positions(std::vector<node> &all_nodes,double time)
 {
-	std::cout<<"time enteres is "<<time<<std::endl;
+
+	std::cout<<"time entered is "<<time<<std::endl;
+	std::vector<std::pair<int,int> > pairs;
+	for( auto i : all_nodes)
+	{
+		std::cout<<"\nnode is is: "<<i.get_node_id();
+		if(!i.is_paired)
+		{
+			int r_dir,i_dir = i.get_direction();
+			std::cout<<"\ni direction :"<<i_dir;
+			if(i_dir==1){
+
+				r_dir =i.get_right_node()->get_direction();
+				std::cout<<" r direction :"<<r_dir;
+
+				if(r_dir==-1 && i.get_right_node()->is_paired==0)
+				{
+					std::pair<int,int>temp = std::make_pair(i.get_node_id(),
+							i.get_right_node()->get_node_id());
+					std::cout<<"pair found 1 :"<<temp.first<<"\t"<<temp.second;
+					pairs.push_back(temp);
+					all_nodes.at(i.get_node_id()+1).is_paired=1;
+					i.is_paired=1;
+				}
+			}
+			/*if(i_dir==-1){
+				 r_dir =i.get_right_node()->get_direction();
+				std::cout<<" r direction :"<<r_dir;
+				if(i.get_right_node()->get_direction()==1 && i.get_right_node()->is_paired==0)
+				{
+					std::pair<int,int>temp = std::make_pair(i.get_node_id(),
+												i.get_right_node()->get_node_id());
+					std::cout<<"pair found -1 :"<<temp.first<<"\t"<<temp.second;
+					pairs.push_back(temp);
+					all_nodes.at(i.get_node_id()+1).is_paired=1;
+					i.is_paired=1;
+
+				}
+			}*/
+		}
+	}
+	std::cout<<"\nprinting pairs\n";
+	for(auto i:pairs){
+		std::cout<<i.first<<"\t"<<i.second<<"\n";
+	}
 }
 
 
@@ -117,7 +171,7 @@ int main() {
 	std::cout << "\nBeads are : " << N << std::endl;
 	std::cout << "Total nodes including two end surfaces :" << all_nodes.size()<< std::endl;
 
-	print_nodes(all_nodes);
+	//print_nodes(all_nodes);
 	std::cout<<"Node initialization is done :\n";
 
 	double time;
