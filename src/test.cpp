@@ -3,14 +3,45 @@
 // Author      : Jatin Bhikadiya
 // Version     : 1.0
 // Description : Beads on string for the VideoIQ interview
+/* Here for each bead there is one node.
+ * Also there are two dummy nodes for each surface.
+ * So there will be total N+2 nodes.
+ *
+ * Each node contains the position of the bead, direction
+ * of the velocity and two neighbors: left and right.
+ * For the first bead left neighbor is node 0(left surface)
+ * and for the last bead right neighbot is node N+1(right surface)
+ *
+ *
+ * After initialization is done, nodes pairs which are going to collide  in
+ * some time 't' are collected. Amongst the collected node pairs, the node pair
+ * which is going to collide first in time "temp" is selected.
+ *
+ * Now all node's position is updated to time "temp". The velocity direction of the
+ * nodes in colliding pair will be changed. No other node will change it's
+ * direction before time "temp", so no need to change direction of other nodes.
+ *
+ * Above process is repeated till the system reaches to time entered by user.
+ *
+ */
 //============================================================================
-
 #include <iostream>
 #include <stdlib.h>
 #include <utility>
+#include <iomanip>
 #include<cmath>
 #include "node.h"
 
+/*
+ * This function initializes the positions and velocity direction of the all beads.
+ * It selects the value of bead position randomly between 0 to 100.
+ * FOr simplicity initial position values are taken as integer values.
+ * But once all nodes(beads) are initialized position value can be any
+ * double value between 0 to 100 based on the velocity.
+ * The velocity direction is randomly selected as 1 or -1.
+ * 1 indicated that bead is travelling in in the direction of surface at 0
+ * to surface at 100. -1 indicated other way.
+ */
 void init_positions(std::vector<int>&positions, std::vector<int>&velocities,
 		double radius, int N) {
 	double diff = (2 * radius);
@@ -19,7 +50,7 @@ void init_positions(std::vector<int>&positions, std::vector<int>&velocities,
 		int v = rand() % 2;
 		bool exist = 0;
 		for (auto j : positions) {
-			if (p == j || abs(p - j) < diff || p==0) {
+			if (p == j || abs(p - j) < diff || p == 0) {
 				exist = 1;
 				continue;
 			} //position already exist
@@ -33,15 +64,21 @@ void init_positions(std::vector<int>&positions, std::vector<int>&velocities,
 	}
 	std::sort(positions.begin(), positions.end());
 
-	std::cout << "\nPositions\t\t: ";
-	for (auto p : positions) {
-		std::cout << p << "\t";
-	}
-	std::cout << "\nVelocity directions\t: ";
-	for (auto v : velocities) {
-		std::cout << v << "\t";
-	}
 }
+
+/*
+ * This function initializes all the nodes. There is one node for each
+ * bead. Also there is associated node with both end surfaces.
+ * So given N beads, there will be total N+2 nodes initialized.
+ * Nodes are initialized with randomly generated position and
+ * velocity directions. Radius is also randomly selected and it is
+ * same for all. Velocity magnitude is constant and is taken 1 for simplicity.
+ * Two special case:
+ * Left surface : for left surface position in 0, velocity direction is
+ * 1(left to right is 1), radius 0 and velocity magnitude 0.
+ * Right surface : for right surface position in 100, velocity direction is
+ * -1(left to right is -1), radius 0 and velocity magnitude 0.
+ */
 
 void init_nodes(std::vector<node*> &all_nodes, std::vector<int>&positions,
 		std::vector<int>&velocities, double r, int N) {
@@ -65,42 +102,60 @@ void init_nodes(std::vector<node*> &all_nodes, std::vector<int>&positions,
 
 }
 
+/*
+ * This function prints all the nodes given in argument
+ */
 void print_nodes(std::vector<node*> &all_nodes) {
-	int count = 0;
+	std::cout
+			<< "\n-----------------Printing node position and velocity direction------------------\n";
+	std::cout << std::left << std::setw(12) << "Node ids" << ":" << std::right;
 	for (auto i : all_nodes) {
-		std::cout << "\n\ncount :" << count;
-		i->print_node_info();
-
-		/*if (count != 0) {
-			std::cout << "\nLeft node is :";
-			i->get_left_node()->print_node_info();
+		int id = i->get_node_id();
+		if (id == 0) {
+			std::cout << std::setw(8) << "L end";
+		} else if (id == all_nodes.size() - 1) {
+			std::cout << std::setw(8) << "R end";
+		} else {
+			std::cout << std::setw(8) << id;
 		}
-		if (count != all_nodes.size() - 1) {
-			std::cout << "\nRight node is :";
-			i->get_right_node()->print_node_info();
-		}*/
-		count++;
 	}
-	std::cout<<std::endl;
+	std::cout << std::endl;
+
+	std::cout << std::left << std::setw(12) << "Positions" << ":" << std::right;
+	for (auto i : all_nodes) {
+		std::cout << std::setw(8) << std::setprecision(5) << i->get_position();
+	}
+	std::cout << std::endl;
+
+	std::cout << std::left << std::setw(12) << "V Directions" << ":"
+			<< std::right;
+	for (auto i : all_nodes) {
+		std::cout << std::setw(8) << i->get_direction();
+	}
+	std::cout << std::endl;
 }
 
+/*
+ * This function find pairs of nodes. Each pair consist of
+ * two neighbor nodes those are travelling in the opposite direction.
+ * There are two possibilities when they have opposite direction
+ * 1: They are coming near to each other
+ * 2: They are moving away to each other
+ * In our case, nodes which are coming near each other are
+ * selected.
+ */
 void find_initial_pairs(std::vector<node*> &all_nodes,
 		std::vector<std::pair<int, int> > &pairs) {
 	for (auto i : all_nodes) {
-		std::cout << "\nnode is: " << i->get_node_id();
 		if (!i->is_paired) {
 			int r_dir, i_dir = i->get_direction();
-			std::cout << "\ti direction : " << i_dir;
 			if (i_dir == 1) {
 
 				r_dir = i->get_right_node()->get_direction();
-				std::cout << "\tr direction : " << r_dir;
 
 				if (r_dir == -1 && i->get_right_node()->is_paired == 0) {
 					std::pair<int, int> temp = std::make_pair(i->get_node_id(),
 							i->get_right_node()->get_node_id());
-					std::cout << "\tpair found 1 :" << temp.first << "\t"
-							<< temp.second;
 					pairs.push_back(temp);
 					i->get_right_node()->is_paired = 1;
 					i->is_paired = 1;
@@ -108,15 +163,17 @@ void find_initial_pairs(std::vector<node*> &all_nodes,
 			}
 		}
 	}
-	std::cout << std::endl;
 }
 
+/* Helper function for index sort
+ *
+ */
 bool sort_time(const std::pair<int, double> &a,
 		const std::pair<int, double>&b) {
 	return a.second < b.second;
 }
 
-/*To find the position at time T
+/* To find the position at time T
  * First, node pairs are found in which two nodes
  * are going to collide in some time t. Amongst these
  * pairs, the pair with minimum collision time is found and
@@ -127,28 +184,33 @@ bool sort_time(const std::pair<int, double> &a,
  */
 void find_positions(std::vector<node*> &all_nodes, double time) {
 
-	std::cout << "time entered is " << time << std::endl;
+	std::cout << "Time entered is " << time << std::endl;
+	double global_time = 0;
+	std::cout << "-----Initial collision----- " << std::endl;
 	while (time > 0) {
-		std::cout << "\nprinting pairs\n";
 		std::vector<std::pair<int, int> > pairs;
 		find_initial_pairs(all_nodes, pairs);
 
 		std::vector<std::pair<int, double>> time_to_impact;
-
-		std::cout << "total pairs : " << pairs.size();
+		std::cout << "Total node pairs which are going to collide : "
+				<< pairs.size() << std::endl;
 		int ind = 0;
 		for (auto i : pairs) {
 			double temp = all_nodes.at(i.first)->time_to_impact(
 					all_nodes.at(i.second));
-			std::cout << temp << "t";
 			time_to_impact.push_back(std::make_pair(ind, temp));
 			ind++;
 		}
 		sort(time_to_impact.begin(), time_to_impact.end(), sort_time);
 
-		std::cout << "\ntime to impact\n";
+		std::cout
+				<< "Pairs sorted in increasing order of time to impact : <pair, pair_index, time to impact>\n";
+		int index = 0;
 		for (auto i : time_to_impact) {
-			std::cout << "<" << i.first << "," << i.second << ">\t";
+			std::cout << "<(" << pairs.at(index).first << ","
+					<< pairs.at(index).second << ")";
+			std::cout << ", " << i.first << ", " << i.second << ">\t";
+			index++;
 		}
 
 		std::vector<int> pair_ids_to_collide;
@@ -162,7 +224,8 @@ void find_positions(std::vector<node*> &all_nodes, double time) {
 			}
 		}
 
-		std::cout << "\nPair ids to collide\n";
+		std::cout
+				<< "\nPair ids to collide(More than one pair can collide at the same time) : ";
 
 		for (auto i : pair_ids_to_collide) {
 			std::cout << i << "\t";
@@ -170,19 +233,22 @@ void find_positions(std::vector<node*> &all_nodes, double time) {
 		std::cout << "\n";
 
 		double temp_time = time_to_impact.at(0).second;
-		std::cout<<" Temp time :"<<temp_time<<std::endl;
-		std::cout<<" Time :"<<time<<std::endl;
+		std::cout << "Time for impact : " << temp_time << std::endl;
+		std::cout << "Total remaining time: " << time << std::endl;
 		if (temp_time < time) {
+			global_time += temp_time;
 			for (auto i : all_nodes) {
 				i->update_position_at_t(temp_time);
 				i->is_paired = 0;
 			}
-			for(auto i:pair_ids_to_collide)
-			{
+			for (auto i : pair_ids_to_collide) {
 				all_nodes.at(pairs.at(i).first)->change_direction();
 				all_nodes.at(pairs.at(i).second)->change_direction();
 			}
+			//comment below 2 line for less verbose
+			std::cout << "\nNodes position after time : " << global_time;
 			print_nodes(all_nodes);
+
 			time -= temp_time;
 
 		} else {
@@ -190,10 +256,19 @@ void find_positions(std::vector<node*> &all_nodes, double time) {
 				i->update_position_at_t(time);
 				i->is_paired = 0;
 			}
+			global_time += time;
+			std::cout << "\nFinal beads position after time : " << global_time;
+			print_nodes(all_nodes);
 			break;
 		}
+		std::cout << "\n-----Next collision----- " << std::endl;
+
 	}
 }
+
+/*
+ * This function will free memory of all the nodes.
+ */
 
 void free_nodes(std::vector<node*> all_nodes) {
 	for (auto i : all_nodes) {
@@ -201,27 +276,19 @@ void free_nodes(std::vector<node*> all_nodes) {
 	}
 	all_nodes.clear();
 }
-/* Here for each bead there is one node.
- * Also there are two dummy nodes for each surface.
- * So there will be total N+2 nodes.
- *
- * Each node contains the position of the bead, direction
- * of the velocity and two neighbors: left and right.
- * For the first bead left neighbor is node 0(left surface)
- * and for the last bead right neighbot is node N+1(right surface)
- */
+
 int main() {
 
-	// Number of node can be between 0 to 20
+	// Number of nodes can be between 0 to 20
 	std::srand(std::time(0));
 	int N = 1 + rand() % 20;
-	std::cout << "N is :" << N << std::endl;
+	std::cout << "Number of beads : " << N << std::endl;
 	std::srand(std::time(0));
-	int temp = 1+ rand() % 100;
+	int temp = 1 + rand() % 100;
 	//radius can be any number between 0 to 10/2*N
 	double radius = double(temp) / (500);
-	std::cout << "Radius is " << radius << std::endl;
-
+	std::cout << "Radius : " << radius << std::endl;
+	std::cout << "Velocity magnitude is : " << 1;
 	//Get position and velocity direction of the bead
 	std::vector<int> positions;
 	std::vector<int> velocities;
@@ -229,15 +296,15 @@ int main() {
 	init_positions(positions, velocities, radius, N);
 
 	std::vector<node*> all_nodes;
+	std::cout << "\nInitializing nodes...\n";
 	init_nodes(all_nodes, positions, velocities, radius, N);
-
-	std::cout << "\nTotal beads are : " << N << std::endl;
-	std::cout << "Total nodes including two end surfaces :" << all_nodes.size()
-			<< std::endl;
+	std::cout << "\nTotal nodes including two end surfaces :"
+			<< all_nodes.size() << std::endl;
 
 //	/print_nodes(all_nodes);
 	std::cout << "\nNode initialization is done...\n";
-
+	std::cout << "\n--Initial node information-- \n";
+	print_nodes(all_nodes);
 //	std::cout<<"\nNode 0 right node is_paired values :"<<all_nodes.at(0)->get_right_node()->is_paired;
 //	all_nodes.at(1)->is_paired=1;
 //	std::cout<<"\nNode 0 right node is_paired values :"<<all_nodes.at(0)->get_right_node()->is_paired;
@@ -245,10 +312,9 @@ int main() {
 //	std::cout<<"\nNode 0 right node is_paired values :"<<all_nodes.at(1)->is_paired;
 
 	double time;
-	std::cout << "Enter value of T to find out positions at time T\n";
-	std::cin>>time;
+	std::cout << "\nEnter value of T to find out positions at time T\n";
+	std::cin >> time;
 	find_positions(all_nodes, time);
-	print_nodes(all_nodes);
 //	/free_nodes(all_nodes);
 	return 0;
 }
