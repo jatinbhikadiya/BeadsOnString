@@ -45,6 +45,8 @@ void node::change_direction() {
 }
 
 node::~node() {
+	left_node = NULL;
+	right_node= NULL;
 	// TODO Auto-generated destructor stub
 }
 

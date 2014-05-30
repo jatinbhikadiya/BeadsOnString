@@ -1,0 +1,12 @@
+To compile the code run : make
+It will generate executable named "test"
+Run executable.
+
+It will generate needed data randomly and ask for the time T to get the beads position.
+It will print the final position of beads at the end of other standard outputs.
+
+Total number of beads will be selected randomly.
+The distance between two ends is 100.
+Velocity magnitude is 1.
+Position and velocity direction will be generated randomly.
+

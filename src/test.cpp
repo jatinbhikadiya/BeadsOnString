@@ -186,8 +186,10 @@ void find_positions(std::vector<node*> &all_nodes, double time) {
 
 	std::cout << "Time entered is " << time << std::endl;
 	double global_time = 0;
+	int iterations=0;
 	std::cout << "-----Initial collision----- " << std::endl;
 	while (time > 0) {
+		iterations++;
 		std::vector<std::pair<int, int> > pairs;
 		find_initial_pairs(all_nodes, pairs);
 
@@ -259,6 +261,7 @@ void find_positions(std::vector<node*> &all_nodes, double time) {
 			global_time += time;
 			std::cout << "\nFinal beads position after time : " << global_time;
 			print_nodes(all_nodes);
+			std::cout<<"Number of iterations to reach given time : "<<iterations<<std::endl;
 			break;
 		}
 		std::cout << "\n-----Next collision----- " << std::endl;
@@ -272,7 +275,7 @@ void find_positions(std::vector<node*> &all_nodes, double time) {
 
 void free_nodes(std::vector<node*> all_nodes) {
 	for (auto i : all_nodes) {
-		delete[] i;
+		delete i;
 	}
 	all_nodes.clear();
 }
@@ -315,6 +318,6 @@ int main() {
 	std::cout << "\nEnter value of T to find out positions at time T\n";
 	std::cin >> time;
 	find_positions(all_nodes, time);
-//	/free_nodes(all_nodes);
+	free_nodes(all_nodes);
 	return 0;
 }
