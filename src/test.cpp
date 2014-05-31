@@ -42,9 +42,9 @@
  * 1 indicated that bead is travelling in in the direction of surface at 0
  * to surface at 100. -1 indicated other way.
  */
-void init_positions(std::vector<double>&positions, std::vector<int>&velocities,
+void init_positions(std::vector<int>&positions, std::vector<int>&velocities,
 		double radius, int N) {
-	/*double diff = (2 * radius);
+	double diff = (2 * radius);
 	for (int i = 0; i < N; i++) {
 		int p = radius + rand() % 99;
 		int v = rand() % 2;
@@ -62,15 +62,7 @@ void init_positions(std::vector<double>&positions, std::vector<int>&velocities,
 			i--;
 		}
 	}
-	std::sort(positions.begin(), positions.end());*/
-	positions.push_back(0.2);
-	positions.push_back(0.3);
-	positions.push_back(0.5);
-	positions.push_back(0.9);
-	velocities.push_back(-1);
-	velocities.push_back(1);
-	velocities.push_back(1);
-	velocities.push_back(-1);
+	std::sort(positions.begin(), positions.end());
 
 }
 
@@ -88,7 +80,7 @@ void init_positions(std::vector<double>&positions, std::vector<int>&velocities,
  * -1(left to right is -1), radius 0 and velocity magnitude 0.
  */
 
-void init_nodes(std::vector<node*> &all_nodes, std::vector<double>&positions,
+void init_nodes(std::vector<node*> &all_nodes, std::vector<int>&positions,
 		std::vector<int>&velocities, double r, int N) {
 
 	node *left_surface = new node(all_nodes.size(), 0, 1, 0, 0);
@@ -103,7 +95,7 @@ void init_nodes(std::vector<node*> &all_nodes, std::vector<double>&positions,
 		all_nodes.at(i + 1)->add_left_node(all_nodes.at(i));
 		all_nodes.at(i)->add_right_node(all_nodes.at(i + 1));
 	}
-	node* right_surface = new node(all_nodes.size(), 1, -1, 0, 0);
+	node* right_surface = new node(all_nodes.size(), 100, -1, 0, 0);
 	all_nodes.push_back(right_surface);
 	all_nodes.at(N)->add_right_node(all_nodes.at(N + 1));
 	all_nodes.at(N + 1)->add_left_node(all_nodes.at(N));
@@ -273,6 +265,7 @@ void find_positions(std::vector<node*> &all_nodes, double time) {
 			break;
 		}
 		std::cout << "\n-----Next collision----- " << std::endl;
+
 	}
 }
 
@@ -291,18 +284,16 @@ int main() {
 
 	// Number of nodes can be between 0 to 20
 	std::srand(std::time(0));
-	//int N = 1 + rand() % 20;
-	int N = 4;
+	int N = 1 + rand() % 20;
 	std::cout << "Number of beads : " << N << std::endl;
 	std::srand(std::time(0));
 	int temp = 1 + rand() % 100;
 	//radius can be any number between 0 to 10/2*N
-	//double radius = double(temp) / (500);
-	double radius = 0.025;
+	double radius = double(temp) / (500);
 	std::cout << "Radius : " << radius << std::endl;
 	std::cout << "Velocity magnitude is : " << 1;
 	//Get position and velocity direction of the bead
-	std::vector<double> positions;
+	std::vector<int> positions;
 	std::vector<int> velocities;
 
 	init_positions(positions, velocities, radius, N);
